@@ -1,33 +1,41 @@
 apiVersion: ai.sap.com/v1alpha1
 kind: ServingTemplate
+
 metadata:
   name: aquaverde-demand-forecast
   annotations:
-    scenarios.ai.sap.com/name: "AquaVerde Demand Forecast"
-    scenarios.ai.sap.com/description: "Demand forecast and replenishment recommendation API for AquaVerde"
-    executables.ai.sap.com/name: "aquaverde-demand-forecast"
-    executables.ai.sap.com/description: "FastAPI inference service for AquaVerde demand forecast and replenishment"
+    scenarios.ai.sap.com/name: "aquaverde-replenishment"
+    scenarios.ai.sap.com/description: "Demand forecast serving for AquaVerde replenishment"
+    executables.ai.sap.com/name: "demand-forecast-serve"
+    executables.ai.sap.com/description: "FastAPI/Uvicorn demand forecast inference service"
   labels:
-    scenarios.ai.sap.com/id: "aquaverde-demand-forecast"
+    scenarios.ai.sap.com/id: "aquaverde-replenishment"
     ai.sap.com/version: "1.0.0"
+
 spec:
   template:
-    apiVersion: serving.kserve.io/v1beta1
+    apiVersion: "serving.kserve.io/v1beta1"
     metadata:
+      annotations: |
+        autoscaling.knative.dev/metric: concurrency
+        autoscaling.knative.dev/target: "1"
       labels: |
         ai.sap.com/resourcePlan: infer.s
     spec: |
       predictor:
         minReplicas: 1
-        maxReplicas: 1
+        maxReplicas: 2
         containers:
           - name: kserve-container
             image: docker.io/nithinram88/aquaverde-inference:3.6
             imagePullPolicy: Always
             ports:
               - containerPort: 8080
-            env:
-              - name: PYTHONUNBUFFERED
-                value: "1"
-              - name: MPLCONFIGDIR
-                value: "/tmp/matplotlib"
+                protocol: TCP
+            command:
+              - uvicorn
+              - serve_aicore:app
+              - --host
+              - 0.0.0.0
+              - --port
+              - "8080"
