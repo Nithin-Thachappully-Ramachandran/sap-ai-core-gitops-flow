@@ -1,0 +1,57 @@
+apiVersion: ai.sap.com/v1alpha1
+kind: ServingTemplate
+
+metadata:
+  name: aquaverde-demand-forecast
+  annotations:
+    scenarios.ai.sap.com/name: "AquaVerde Replenishment"
+    scenarios.ai.sap.com/description: "Demand forecasting and replenishment recommendation service for AquaVerde"
+    executables.ai.sap.com/name: "aquaverde-demand-forecast-serve"
+    executables.ai.sap.com/description: "FastAPI/Uvicorn inference service exposing health, readiness, forecast, and replenishment endpoints"
+  labels:
+    scenarios.ai.sap.com/id: "aquaverde-replenishment"
+    ai.sap.com/version: "1.0.0"
+
+spec:
+  template:
+    apiVersion: "serving.kserve.io/v1beta1"
+    metadata:
+      labels: |
+        ai.sap.com/resourcePlan: infer.s
+      annotations: |
+        autoscaling.knative.dev/metric: concurrency
+        autoscaling.knative.dev/target: "1"
+        autoscaling.knative.dev/minScale: "1"
+        autoscaling.knative.dev/maxScale: "2"
+    spec: |
+      predictor:
+        minReplicas: 1
+        maxReplicas: 2
+        containers:
+          - name: kserve-container
+            image: docker.io/nithinram88/aquaverde-inference:3.6
+            imagePullPolicy: Always
+            ports:
+              - containerPort: 8080
+                protocol: TCP
+            env:
+              - name: PYTHONUNBUFFERED
+                value: "1"
+              - name: MPLCONFIGDIR
+                value: "/tmp/matplotlib"
+            readinessProbe:
+              httpGet:
+                path: /v2/readyz
+                port: 8080
+              initialDelaySeconds: 20
+              periodSeconds: 10
+              timeoutSeconds: 5
+              failureThreshold: 6
+            livenessProbe:
+              httpGet:
+                path: /v2/healthz
+                port: 8080
+              initialDelaySeconds: 30
+              periodSeconds: 20
+              timeoutSeconds: 5
+              failureThreshold: 3

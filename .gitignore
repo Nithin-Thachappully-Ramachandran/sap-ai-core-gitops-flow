@@ -1,0 +1,6 @@
+model.joblib
+latest_features.csv
+.env
+__pycache__/
+*.pyc
+.ipynb_checkpoints/

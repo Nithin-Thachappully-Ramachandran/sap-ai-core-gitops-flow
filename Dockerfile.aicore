@@ -1,0 +1,30 @@
+# AquaVerde quantile inference image - build for linux/amd64 for SAP AI Core.
+FROM python:3.12-slim
+
+WORKDIR /app
+
+# libgomp1 is required by LightGBM. /tmp config avoids non-root matplotlib warnings from MLflow imports.
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends libgomp1 && \
+    rm -rf /var/lib/apt/lists/* && \
+    mkdir -p /tmp/matplotlib /tmp/.cache && \
+    chmod -R 777 /tmp/matplotlib /tmp/.cache
+
+ENV HOME=/tmp
+ENV MPLCONFIGDIR=/tmp/matplotlib
+ENV PYTHONUNBUFFERED=1
+
+COPY requirements-aicore.txt .
+RUN pip install --no-cache-dir -r requirements-aicore.txt
+
+COPY model.joblib /app/model.joblib
+COPY latest_features.csv /app/latest_features.csv
+COPY serve_aicore.py /app/serve_aicore.py
+
+RUN chgrp -R 65534 /app && chmod -R g=u /app
+
+USER 65534:65534
+
+EXPOSE 8080
+
+CMD ["uvicorn", "serve_aicore:app", "--host", "0.0.0.0", "--port", "8080"]
