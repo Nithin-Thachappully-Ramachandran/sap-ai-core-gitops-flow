@@ -27,7 +27,7 @@ spec:
         maxReplicas: 2
         containers:
           - name: kserve-container
-            image: docker.io/nithinram88/aquaverde-inference:3.7
+            image: docker.io/nithinram88/aquaverde-inference:3.8
             imagePullPolicy: Always
             ports:
               - containerPort: 8080
