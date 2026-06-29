@@ -5,9 +5,9 @@ metadata:
   name: alpenwerk-delay-predictor
   annotations:
     scenarios.ai.sap.com/name: "alpenwerk-delay-prediction"
-    scenarios.ai.sap.com/description: "Delivery-delay prediction serving for Alpenwerk"
+    scenarios.ai.sap.com/description: "Delivery-delay prediction serving for AlpenWerk"
     executables.ai.sap.com/name: "delay-predictor-serve"
-    executables.ai.sap.com/description: "Gunicorn delay prediction inference service"
+    executables.ai.sap.com/description: "Flask delay prediction inference service"
   labels:
     scenarios.ai.sap.com/id: "alpenwerk-delay-prediction"
     ai.sap.com/version: "1.0.0"
@@ -31,4 +31,3 @@ spec:
             imagePullPolicy: Always
             ports:
               - containerPort: 8080
-                protocol: TCP
