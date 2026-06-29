@@ -1,0 +1,34 @@
+apiVersion: ai.sap.com/v1alpha1
+kind: ServingTemplate
+
+metadata:
+  name: alpenwerk-delay-predictor
+  annotations:
+    scenarios.ai.sap.com/name: "alpenwerk-delay-prediction"
+    scenarios.ai.sap.com/description: "Delivery-delay prediction serving for Alpenwerk"
+    executables.ai.sap.com/name: "delay-predictor-serve"
+    executables.ai.sap.com/description: "Gunicorn delay prediction inference service"
+  labels:
+    scenarios.ai.sap.com/id: "alpenwerk-delay-prediction"
+    ai.sap.com/version: "1.0.0"
+
+spec:
+  template:
+    apiVersion: "serving.kserve.io/v1beta1"
+    metadata:
+      annotations: |
+        autoscaling.knative.dev/metric: concurrency
+        autoscaling.knative.dev/target: "1"
+      labels: |
+        ai.sap.com/resourcePlan: infer.s
+    spec: |
+      predictor:
+        minReplicas: 1
+        maxReplicas: 2
+        containers:
+          - name: kserve-container
+            image: docker.io/nithinram88/alpenwerk-delay-predictor:latest
+            imagePullPolicy: Always
+            ports:
+              - containerPort: 8080
+                protocol: TCP
