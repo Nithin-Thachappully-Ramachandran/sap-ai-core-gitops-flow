@@ -27,7 +27,7 @@ spec:
         maxReplicas: 2
         containers:
           - name: kserve-container
-            image: docker.io/nithinram88/alpenwerk-delay-predictor:latest
+            image: docker.io/nithinram88/alpenwerk-delay-predictor:1.1
             imagePullPolicy: Always
             ports:
               - containerPort: 8080
