@@ -1,0 +1,44 @@
+apiVersion: ai.sap.com/v1alpha1
+kind: ServingTemplate
+metadata:
+  name: data-agent-serving
+  annotations:
+    scenarios.ai.sap.com/name: "alpenwerk-data-agent"
+    scenarios.ai.sap.com/description: "Manufacturing analytics data agent served with FastAPI"
+    executables.ai.sap.com/name: "data-agent-server"
+    executables.ai.sap.com/description: "FastAPI container for deterministic manufacturing analytics over CSV data"
+  labels:
+    scenarios.ai.sap.com/id: "alpenwerk-data-agent"
+    executables.ai.sap.com/id: "data-agent-server"
+    ai.sap.com/version: "1.1.0"
+spec:
+  inputs:
+    parameters:
+      - name: image
+        type: string
+        default: "docker.io/nithinram88/data-agent-aicore:0.1.0"
+  template:
+    apiVersion: "serving.kserve.io/v1beta1"
+    metadata:
+      annotations: |
+        autoscaling.knative.dev/metric: concurrency
+        autoscaling.knative.dev/target: "10"
+      labels: |
+        ai.sap.com/resourcePlan: starter
+    spec: |
+      predictor:
+ #       imagePullSecrets:
+ #         - name: dockerhub
+        minReplicas: 1
+        maxReplicas: 1
+        containers:
+          - name: kserve-container
+            image: "{{inputs.parameters.image}}"
+            ports:
+              - containerPort: 8080
+                protocol: TCP
+            env:
+              - name: PORT
+                value: "8080"
+              - name: DATA_DIR
+                value: "/app/csv"
